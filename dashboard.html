@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Дашборд конкурентів</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>📊 Дашборд конкурентів</h1>
+<div class="hint" id="info">Завантажую…</div>
+<div class="bar">
+  <select id="acc"><option value="">Усі акаунти</option></select>
+  <select id="fmt"><option value="">Усі формати</option></select>
+  <select id="sort">
+    <option value="x">× медіани</option>
+    <option value="views">Перегляди</option>
+    <option value="date">Найновіші</option>
+  </select>
+</div>
+<div class="hint">Які формати заходять (середній × медіани):</div>
+<div class="chips" id="formats"></div>
+<div id="list"></div>
+<div class="err" id="err" hidden></div>
+<script src="common.js"></script>
+<script>
+enableBack();
+let all = [];
+const $ = id => document.getElementById(id);
+const n = v => Number(v) || 0;
+
+api('reels').then(rows => {
+  all = rows;
+  const upd = rows[0] ? rows[0]['оновлено'] : '';
+  $('info').textContent = rows.length + ' рилсів · оновлено ' + (upd || '—');
+  [...new Set(rows.map(r => r.account))].sort().forEach(a => $('acc').add(new Option('@' + a, a)));
+  [...new Set(rows.map(r => r['формат']).filter(Boolean))].sort().forEach(f => $('fmt').add(new Option(f, f)));
+  // рейтинг форматів
+  const g = {};
+  rows.filter(r => r['формат']).forEach(r => { (g[r['формат']] = g[r['формат']] || []).push(n(r['x медіани'])); });
+  $('formats').innerHTML = Object.entries(g)
+    .map(([f, xs]) => [f, xs.reduce((a, b) => a + b, 0) / xs.length, xs.length])
+    .sort((a, b) => b[1] - a[1])
+    .map(([f, avg, c]) => `<span class="chip">${esc(f)} <b>×${avg.toFixed(1)}</b> (${c})</span>`).join('');
+  render();
+}).catch(e => { $('info').textContent = ''; $('err').hidden = false; $('err').textContent = e.message; });
+
+['acc', 'fmt', 'sort'].forEach(id => $(id).onchange = render);
+
+function render() {
+  const acc = $('acc').value, fmt = $('fmt').value, s = $('sort').value;
+  let rows = all.filter(r => (!acc || r.account === acc) && (!fmt || r['формат'] === fmt));
+  rows.sort((a, b) => s === 'date' ? String(b['дата']).localeCompare(String(a['дата']))
+                    : s === 'views' ? n(b['перегляди']) - n(a['перегляди'])
+                    : n(b['x медіани']) - n(a['x медіани']));
+  $('list').innerHTML = rows.slice(0, 150).map(r => `
+    <div class="card">
+      <div class="top"><span>@${esc(r.account)} · ${esc(String(r['дата']).slice(0,10))} · ${n(r['перегляди']).toLocaleString('uk')} перегл.</span>
+        <span class="x">×${n(r['x медіани']).toFixed(1)}</span></div>
+      ${r['хук'] ? `<div class="hook">«${esc(r['хук'])}»</div>` : ''}
+      ${r['тема'] ? `<div>${esc(r['тема'])}</div>` : ''}
+      <div>
+        ${r['формат'] ? `<span class="tag">${esc(r['формат'])}</span>` : ''}
+        ${r['заклик'] && r['заклик'] !== 'немає' ? `<span class="tag">📣 ${esc(r['заклик'])}</span>` : ''}
+        ${r['ціна в ролику'] && r['ціна в ролику'] !== 'немає' ? `<span class="tag">💰 ${esc(r['ціна в ролику'])}</span>` : ''}
+        <span class="tag">${esc(r['реклама/органіка'])}</span>
+      </div>
+      <a href="${esc(r.url)}" onclick="tg && tg.openLink(this.href); return !tg;">Відкрити в Instagram →</a>
+    </div>`).join('') || '<div class="hint">Поки порожньо. Запустіть блокнот у Colab.</div>';
+}
+</script>
+</body>
+</html>
