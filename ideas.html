@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Банк ідей</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>💡 Банк ідей</h1>
+<div class="tabs" id="tabs">
+  <button data-t="hits" class="on">🔥 Хіти</button>
+  <button data-t="Ідеї">Ідеї</button>
+  <button data-t="У роботі">У роботі</button>
+  <button data-t="Знято">Знято</button>
+</div>
+<form class="add" id="add" hidden>
+  <input id="title" placeholder="Ідея: що знімаємо" required>
+  <input id="hook" placeholder="Хук (перша фраза)">
+  <select id="format">
+    <option value="">Формат</option>
+    <option>до/після</option><option>огляд тканини чи механізмів</option><option>монтаж</option>
+    <option>відгук клієнта</option><option>інтер'єр під метраж</option><option>огляд об'єкта з людиною</option>
+    <option>з чого складається ціна</option><option>виробництво</option><option>порада/лайфхак</option><option>інше</option>
+  </select>
+  <button class="btn" type="submit">+ Додати ідею</button>
+</form>
+<div class="hint" id="info">Завантажую…</div>
+<div id="list"></div>
+<div class="err" id="err" hidden></div>
+<script src="common.js"></script>
+<script>
+enableBack();
+const $ = id => document.getElementById(id);
+const n = v => Number(v) || 0;
+const NEXT = { 'Ідеї': 'У роботі', 'У роботі': 'Знято' };
+const PREV = { 'У роботі': 'Ідеї', 'Знято': 'У роботі' };
+let tab = 'hits', reels = [], ideas = [];
+
+function fail(e) { $('err').hidden = false; $('err').textContent = e.message; }
+function load() {
+  return Promise.all([api('reels'), api('ideas')]).then(([r, i]) => { reels = r; ideas = i; $('info').textContent = ''; render(); }).catch(fail);
+}
+load();
+
+$('tabs').onclick = e => {
+  if (!e.target.dataset.t) return;
+  tab = e.target.dataset.t;
+  [...$('tabs').children].forEach(b => b.classList.toggle('on', b === e.target));
+  render();
+};
+
+function render() {
+  $('add').hidden = tab !== 'Ідеї';
+  if (tab === 'hits') {
+    const used = new Set(ideas.map(i => i['джерело (url)']));
+    const hits = reels.filter(r => n(r['x медіани']) >= 2).sort((a, b) => n(b['x медіани']) - n(a['x медіани']));
+    $('list').innerHTML = hits.map((r, k) => `
+      <div class="card">
+        <div class="top"><span>@${esc(r.account)} · ${n(r['перегляди']).toLocaleString('uk')} перегл.</span><span class="x">×${n(r['x медіани']).toFixed(1)}</span></div>
+        ${r['хук'] ? `<div class="hook">«${esc(r['хук'])}»</div>` : ''}
+        <div>${esc(r['тема'])}</div>
+        ${r['формат'] ? `<span class="tag">${esc(r['формат'])}</span>` : ''}
+        <div class="row">
+          ${used.has(r.url) ? '<span class="hint">✓ вже на дошці</span>' : `<button class="btn" onclick="fromHit(${k})">+ На дошку</button>`}
+          <a class="btn ghost" href="${esc(r.url)}" onclick="tg && tg.openLink(this.href); return !tg;">Дивитись</a>
+        </div>
+      </div>`).join('') || '<div class="hint">Хітів (×2 і більше) поки немає. Запустіть блокнот у Colab.</div>';
+    window._hits = hits;
+  } else {
+    const list = ideas.filter(i => i['статус'] === tab);
+    $('list').innerHTML = list.map(i => `
+      <div class="card">
+        <div class="hook">${esc(i['назва'])}</div>
+        ${i['хук'] ? `<div>«${esc(i['хук'])}»</div>` : ''}
+        ${i['формат'] ? `<span class="tag">${esc(i['формат'])}</span>` : ''}
+        <div class="hint">${esc(i['відповідальний'])}</div>
+        <div class="row">
+          ${PREV[tab] ? `<button class="btn ghost" onclick="move('${esc(i.id)}','${PREV[tab]}')">← ${PREV[tab]}</button>` : ''}
+          ${NEXT[tab] ? `<button class="btn" onclick="move('${esc(i.id)}','${NEXT[tab]}')">${NEXT[tab]} →</button>` : ''}
+          ${i['джерело (url)'] ? `<a class="btn ghost" href="${esc(i['джерело (url)'])}" onclick="tg && tg.openLink(this.href); return !tg;">Зразок</a>` : ''}
+        </div>
+      </div>`).join('') || '<div class="hint">Порожньо.</div>';
+  }
+}
+
+function fromHit(k) {
+  const r = window._hits[k];
+  api('addIdea', { title: r['тема'] || 'Ідея з @' + r.account, source: r.url, format: r['формат'], hook: r['хук'] })
+    .then(load).then(() => tg && tg.showAlert && tg.showAlert('Додано в «Ідеї»')).catch(fail);
+}
+function move(id, status) { api('moveIdea', { id, status }).then(load).catch(fail); }
+
+$('add').onsubmit = e => {
+  e.preventDefault();
+  api('addIdea', { title: $('title').value, hook: $('hook').value, format: $('format').value })
+    .then(() => { $('add').reset(); return load(); }).catch(fail);
+};
+</script>
+</body>
+</html>

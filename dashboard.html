@@ -63,7 +63,10 @@ function render() {
       <div>
         ${r['формат'] ? `<span class="tag">${esc(r['формат'])}</span>` : ''}
         ${r['заклик'] && r['заклик'] !== 'немає' ? `<span class="tag">📣 ${esc(r['заклик'])}</span>` : ''}
-        ${r['ціна в ролику'] && r['ціна в ролику'] !== 'немає' ? `<span class="tag">💰 ${esc(r['ціна в ролику'])}</span>` : ''}
+        ${r['тип хука'] ? `<span class="tag">🪝 ${esc(r['тип хука'])}${r['сила хука'] ? ' · ' + esc(r['сила хука']) : ''}</span>` : ''}
+        ${r['ціна в ролику'] === 'так' ? '<span class="tag">💰 є ціна</span>' : ''}
+        ${r['ЖК/район'] === 'так' ? '<span class="tag">📍 ЖК/район</span>' : ''}
+        ${r['перший кадр'] ? `<span class="tag">🎞 ${esc(r['перший кадр'])}</span>` : ''}
         <span class="tag">${esc(r['реклама/органіка'])}</span>
       </div>
       <a href="${esc(r.url)}" onclick="tg && tg.openLink(this.href); return !tg;">Відкрити в Instagram →</a>
