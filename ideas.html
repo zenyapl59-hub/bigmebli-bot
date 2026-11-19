@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Банк ідей</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="theme.js"></script>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="bento.css">
+<style>body{padding:16px 16px 100px!important}</style>
 </head>
 <body>
 <h1>💡 Банк ідей</h1>
@@ -30,17 +33,19 @@
 <div id="list"></div>
 <div class="err" id="err" hidden></div>
 <script src="common.js"></script>
+<script src="nav.js"></script>
 <script>
 enableBack();
+const LD = loader('Завантажую ідеї…');
 const $ = id => document.getElementById(id);
 const n = v => Number(v) || 0;
 const NEXT = { 'Ідеї': 'У роботі', 'У роботі': 'Знято' };
 const PREV = { 'У роботі': 'Ідеї', 'Знято': 'У роботі' };
 let tab = 'hits', reels = [], ideas = [];
 
-function fail(e) { $('err').hidden = false; $('err').textContent = e.message; }
+function fail(e) { if (document.getElementById('loader')) LD.fail(e.message); $('err').hidden = false; $('err').textContent = e.message; }
 function load() {
-  return Promise.all([api('reels'), api('ideas')]).then(([r, i]) => { reels = r; ideas = i; $('info').textContent = ''; render(); }).catch(fail);
+  return Promise.all([api('reels'), api('ideas')]).then(([r, i]) => { reels = r; ideas = i; $('info').textContent = ''; render(); LD.done(); }).catch(fail);
 }
 load();
 

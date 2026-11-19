@@ -70,9 +70,11 @@
 </div>
 
 <script src="common.js"></script>
+<script src="nav.js"></script>
 <script src="charts.js"></script>
 <script>
 enableBack();
+const LD = loader('Завантажую аналітику…');
 const $ = id => document.getElementById(id);
 const n = v => Number(v) || 0;
 const HIT = 3;
@@ -90,11 +92,11 @@ const share = (rows, key) => { const g = {}; rows.filter(r => r[key]).forEach(r 
 
 api('reels').then(rows => {
   all = rows.map(r => ({ ...r, _x: n(r['x медіани']) }));
-  if (!all.length) { $('sum').textContent = 'Даних ще немає. Запустіть блокнот у Colab.'; return; }
-  overview(); list();
+  if (!all.length) { $('sum').textContent = 'Даних ще немає. Запустіть блокнот у Colab.'; LD.done(); return; }
+  overview(); list(); LD.done();
   [...new Set(all.map(r => r.account))].sort().forEach(a => $('acc').add(new Option('@' + a, a)));
   [...new Set(all.map(r => r['формат']).filter(Boolean))].sort().forEach(f => $('fmtSel').add(new Option(f, f)));
-}).catch(e => { $('err').hidden = false; $('err').textContent = e.message; });
+}).catch(e => { LD.fail(e.message); });
 
 function overview() {
   const hits = all.filter(r => r._x >= HIT), accs = [...new Set(all.map(r => r.account))];

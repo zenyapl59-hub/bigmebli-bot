@@ -50,9 +50,11 @@
 </div>
 
 <script src="common.js"></script>
+<script src="nav.js"></script>
 <script src="charts.js"></script>
 <script>
 enableBack();
+const LD = loader('Завантажую рекламу…');
 const CPL_TARGET = 8;   // ціль: ціна заявки в $ (можна змінити)
 const $ = id => document.getElementById(id);
 const n = v => Number(String(v).replace(',', '.')) || 0;
@@ -69,8 +71,8 @@ function demo() {
   return out;
 }
 
-api('ourAds').then(r => { rows = r.length ? r : (($('demo').hidden = false), demo()); draw(); })
-  .catch(e => { rows = demo(); $('demo').hidden = false; draw(); });
+api('ourAds').then(r => { rows = r.length ? r : (($('demo').hidden = false), demo()); draw(); LD.done(); })
+  .catch(e => { if (/доступ|Telegram/i.test(e.message)) return LD.fail(e.message); rows = demo(); $('demo').hidden = false; draw(); LD.done(); });
 
 $('per').onclick = e => { if (!e.target.dataset.d) return; days = +e.target.dataset.d; [...$('per').children].forEach(b => b.classList.toggle('on', b === e.target)); draw(); };
 

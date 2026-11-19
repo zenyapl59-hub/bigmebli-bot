@@ -8,7 +8,7 @@ if (tg) { tg.ready(); tg.expand(); }
 async function api(action, payload) {
   const res = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // так Google не блокує запит
     body: JSON.stringify({ action, payload: payload || {}, initData: tg ? tg.initData : '' })
   });
   const j = await res.json();
@@ -17,10 +17,8 @@ async function api(action, payload) {
 }
 
 // Кнопка "Назад" Telegram на внутрішніх сторінках
-function enableBack() {
-  if (!tg) return;
-  tg.BackButton.show();
-  tg.BackButton.onClick(() => { location.href = 'index.html'; });
+function enableBack() {   // меню знизу замінює кнопку «Назад»
+  if (tg) tg.BackButton.hide();
 }
 
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
