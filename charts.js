@@ -26,7 +26,7 @@ function vbars(data, o = {}) {
   if (o.ref != null) s += `<line class="rf" x1="0" x2="${W}" y1="${sy(o.ref)}" y2="${sy(o.ref)}"/><text x="${W}" y="${sy(o.ref) - 4}" text-anchor="end">${o.refLabel || ''}</text>`;
   data.forEach((d, i) => { const x = i * step + (step - bw) / 2, y = sy(d.v), h = Math.max(H - B - y, 2), isHi = i === hi;
     s += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="${bw / 2}" fill="${isHi ? 'var(--accent)' : (o.color || 'var(--text)')}" ${isHi ? '' : 'fill-opacity=".85"'} data-tip="${esc(d.tip || d.k + ': ' + (o.fmt || String)(d.v))}"/>`;
-    const every = Math.max(1, Math.ceil(34 / step)); if (i % every === 0) s += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${esc(d.short || d.k)}</text>`; });
+    const every = Math.max(1, Math.ceil(34 / step)); if (i % every === 0) s += `<text x="${Math.min(Math.max(x + bw / 2, 16), W - 16)}" y="${H - 6}" text-anchor="middle">${esc(d.short || d.k)}</text>`; });
   const d = data[hi], x = hi * step + step / 2, y = sy(d.v), lab = (o.fmt || String)(d.v), lw = lab.length * 7 + 14;
   const bx = Math.min(Math.max(x - lw / 2, 0), W - lw);
   s += `<rect x="${bx}" y="${y - 26}" width="${lw}" height="20" rx="10" fill="var(--esp)"/><text x="${bx + lw / 2}" y="${y - 12}" text-anchor="middle" style="fill:var(--esp-text);font-weight:700">${lab}</text>`;
