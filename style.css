@@ -1,36 +1,49 @@
+/* Big Mebli — спільний стиль: теплий «дерево + льон», світла і темна тема */
 :root{
-  --bg: var(--tg-theme-bg-color, #ffffff);
-  --text: var(--tg-theme-text-color, #1c1c1e);
-  --hint: var(--tg-theme-hint-color, #8e8e93);
-  --card: var(--tg-theme-secondary-bg-color, #f2f2f7);
-  --accent: var(--tg-theme-button-color, #b5835a);
-  --accent-text: var(--tg-theme-button-text-color, #ffffff);
+  --bg:#f6f2ec; --surface:#ffffff; --card:#fbf8f4; --line:#e8e0d5;
+  --text:#2a241f; --text2:#6f655b; --hint:#9a8f84;
+  --accent:#a8693a; --accent-soft:#f1e3d6; --accent-text:#ffffff;
+  --good:#3f7d4e; --bar:#b9794a; --bar-track:#efe6dc;
+  --shadow:0 1px 2px rgba(60,40,20,.06),0 4px 16px rgba(60,40,20,.06);
+}
+:root[data-theme="dark"]{
+  --bg:#171412; --surface:#211d1a; --card:#26211d; --line:#3a332d;
+  --text:#f2ebe3; --text2:#b9ada1; --hint:#8c8177;
+  --accent:#d39a6a; --accent-soft:#3b2d22; --accent-text:#1b1511;
+  --good:#7cc08c; --bar:#d39a6a; --bar-track:#332b25;
+  --shadow:none;
 }
 *{box-sizing:border-box}
-body{margin:0;padding:16px;background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-h1{font-size:22px;margin:4px 0 2px}
+body{margin:0;padding:16px 16px 40px;background:var(--bg);color:var(--text);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+h1{font-size:24px;letter-spacing:-.02em;margin:4px 0 2px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin:26px 0 10px;font-weight:600}
 .hint{color:var(--hint);font-size:13px}
+.brand{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+/* меню */
 .menu{display:grid;gap:10px;margin-top:18px}
-.item{display:flex;gap:12px;align-items:center;padding:14px;border-radius:14px;background:var(--card);color:var(--text);text-decoration:none}
-.item .ic{font-size:26px;width:36px;text-align:center}
+.item{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:16px;background:var(--surface);color:var(--text);text-decoration:none;box-shadow:var(--shadow);border:1px solid var(--line)}
+.item .ic{font-size:24px;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center}
 .item b{display:block;font-size:16px}
 .item.soon{opacity:.45;pointer-events:none}
 .err{padding:14px;border-radius:12px;background:#ffe5e5;color:#a00;margin-top:16px}
+/* контролі */
 .bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-select,input,textarea{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--hint);background:var(--bg);color:var(--text)}
-.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:8px 0}
-.chip{white-space:nowrap;padding:6px 10px;border-radius:20px;background:var(--card);font-size:13px}
-.chip b{color:var(--accent)}
-.card{padding:12px;border-radius:14px;background:var(--card);margin-bottom:10px}
-.card .top{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--hint)}
-.card .x{font-weight:700;color:var(--accent);font-size:16px}
-.card .hook{font-weight:600;margin:6px 0}
-.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:8px;background:var(--bg);margin:2px 4px 2px 0}
-.card a{color:var(--accent)}
-.btn{display:inline-block;padding:8px 12px;border-radius:10px;background:var(--accent);color:var(--accent-text);border:0;font:inherit;cursor:pointer}
-.tabs{display:flex;gap:6px;margin:12px 0}
-.tabs button{flex:1;padding:8px;border-radius:10px;border:0;background:var(--card);color:var(--text);font:inherit}
+select,input,textarea{font:inherit;font-size:14px;padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text)}
+.btn{display:inline-block;padding:9px 14px;border-radius:12px;background:var(--accent);color:var(--accent-text);border:0;font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.tabs{display:flex;gap:6px;margin:14px 0;background:var(--surface);padding:4px;border-radius:14px;border:1px solid var(--line)}
+.tabs button{flex:1;padding:8px 4px;border-radius:10px;border:0;background:transparent;color:var(--text2);font:inherit;font-size:13px;font-weight:600}
 .tabs button.on{background:var(--accent);color:var(--accent-text)}
-.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.btn.ghost{background:var(--bg);color:var(--text);border:1px solid var(--hint)}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 form.add{display:grid;gap:8px;margin-bottom:12px}
+/* картки */
+.card{padding:14px;border-radius:16px;background:var(--surface);margin-bottom:10px;border:1px solid var(--line);box-shadow:var(--shadow)}
+.card .top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--hint)}
+.card .x{font-weight:700;color:var(--accent);font-size:15px;background:var(--accent-soft);padding:2px 9px;border-radius:20px}
+.card .hook{font-weight:600;font-size:16px;line-height:1.35;margin:8px 0 4px;letter-spacing:-.01em}
+.card a{color:var(--accent);font-size:13px;font-weight:600;text-decoration:none}
+.tag{display:inline-block;font-size:12px;padding:3px 9px;border-radius:20px;background:var(--card);border:1px solid var(--line);color:var(--text2);margin:6px 4px 0 0}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:8px 0}
+.chip{white-space:nowrap;padding:6px 10px;border-radius:20px;background:var(--surface);border:1px solid var(--line);font-size:13px}
+.chip b{color:var(--accent)}
