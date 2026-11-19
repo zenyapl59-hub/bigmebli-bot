@@ -3,74 +3,182 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Дашборд конкурентів</title>
+<title>Конкуренти · Reels</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="theme.js"></script>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="bento.css">
+<style>
+.hm{display:grid;gap:4px;font-size:11.5px;margin-top:12px}
+.hm .c{border-radius:10px;min-height:40px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.hm .h{color:var(--hint);display:flex;align-items:flex-end;justify-content:center;text-align:center;line-height:1.15;padding-bottom:4px;font-size:10.5px}
+.hm .r{color:var(--text2);display:flex;align-items:center;line-height:1.2;font-size:12px}
+.steps{display:grid;gap:8px;margin-top:12px;position:relative}
+.steps>div{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;background:rgba(255,255,255,.07);border-radius:14px;padding:10px 12px}
+.steps i{font-style:normal;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.steps b{font-size:14px}.steps small{display:block;font-size:11px;color:rgba(246,239,230,.6)}
+.steps span{font-size:12px;font-weight:700;color:var(--accent)}
+.nums{display:grid;gap:12px;margin-top:12px;counter-reset:i;padding:0;list-style:none}
+.nums li{display:grid;grid-template-columns:24px 1fr;gap:10px;font-size:14px;line-height:1.5}
+.nums li::before{counter-increment:i;content:counter(i);font-weight:800;font-size:18px;color:var(--accent)}
+[data-tab]{display:none}[data-tab].show{display:contents}
+</style>
 </head>
 <body>
-<h1>📊 Дашборд конкурентів</h1>
-<div class="hint" id="info">Завантажую…</div>
-<div class="bar">
-  <select id="acc"><option value="">Усі акаунти</option></select>
-  <select id="fmt"><option value="">Усі формати</option></select>
-  <select id="sort">
-    <option value="x">× медіани</option>
-    <option value="views">Перегляди</option>
-    <option value="date">Найновіші</option>
-  </select>
+<div class="page">
+  <div class="head"><div><div class="brand">Big Mebli · конкуренти</div><h1 id="hi">Добрий день</h1><p id="sum">Завантажую дані…</p></div><div class="avatar" id="ava">BM</div></div>
+  <div class="chips2" id="seg"><button data-t="o" class="on">Огляд</button><button data-t="f">Формати й хуки</button><button data-t="r">Рилси</button></div>
+  <div class="err" id="err" hidden></div>
+
+  <div class="bento">
+    <!-- ОГЛЯД -->
+    <div data-tab="o">
+      <div class="t kpi2"><div class="top"><div class="ico">🎬</div><span id="b1"></span></div><div class="lbl">Рилсів за 90 днів</div><div class="num" id="k1">—</div><div class="cmp" id="c1"></div></div>
+      <div class="t kpi2"><div class="top"><div class="ico">🔥</div><span id="b2"></span></div><div class="lbl">Хітів від 3× медіани</div><div class="num" id="k2">—</div><div class="cmp" id="c2"></div></div>
+      <div class="t kpi2"><div class="top"><div class="ico">🏆</div></div><div class="lbl">Рекорд</div><div class="num" id="k3">—</div><div class="cmp" id="c3"></div></div>
+      <div class="t kpi2"><div class="top"><div class="ico">👀</div></div><div class="lbl">Медіана переглядів</div><div class="num" id="k4">—</div><div class="cmp">типовий рилс конкурента</div></div>
+
+      <div class="t tan w2"><span class="sh" data-shape="plus"></span><h4>Формати</h4><div class="muted">У скільки разів вище за звичайний результат автора</div><div class="row3" id="fRow"></div><div id="fBars" style="margin-top:8px"></div><div class="say" id="fSay"></div></div>
+
+      <div class="t esp w2"><span class="sh" data-shape="star"></span><h4>Формула хіта</h4><div class="muted">Що найчастіше мають рилси від 3×</div><div class="steps" id="steps"></div><div class="say" id="stepSay"></div></div>
+
+      <div class="t rose w2"><span class="sh" data-shape="heart"></span><h4>Ефект прийомів</h4><div class="muted">Наскільки рилси з прийомом сильніші, ніж без нього</div><div class="lst" id="lifts"></div><div class="say" id="liftSay"></div></div>
+
+      <div class="t sage w2"><span class="sh" data-shape="tri"></span><h4>Тривалість</h4><div class="muted">Який хронометраж працює найкраще</div><div id="dur" style="margin-top:8px"></div><div class="say" id="durSay"></div></div>
+
+      <div class="t w2"><h4>Конкуренти</h4><div class="muted">Розмір кола — медіана переглядів</div><div id="bub" style="margin-top:6px"></div><div class="lst" id="accList"></div></div>
+
+      <div class="t w2"><h4>Головні висновки</h4><div class="muted">Сформовано автоматично</div><ol class="nums" id="ins"></ol></div>
+    </div>
+
+    <!-- ФОРМАТИ Й ХУКИ -->
+    <div data-tab="f">
+      <div class="t w2"><h4>Хуки серед хітів</h4><div class="muted">Яка перша секунда найчастіше в рилсах від 3×</div>
+        <div style="display:flex;gap:14px;align-items:center;margin-top:10px"><div id="ring"></div><div style="flex:1;min-width:0" id="ringLeg"></div></div><div class="say" id="ringSay"></div></div>
+      <div class="t tan w2"><span class="sh" data-shape="circle"></span><h4>Хук × формат</h4><div class="muted">Темніше — сильніше. У клітинці середнє «×»</div><div id="hm"></div><div class="say" id="hmSay"></div></div>
+      <div class="t w2"><h4>Сила хуків</h4><div class="muted">Середнє «×» за типом хука</div><div id="hBars" style="margin-top:8px"></div></div>
+      <div class="t w2"><h4>Динаміка по тижнях</h4><div class="muted">Скільки хітів з’являється щотижня</div><div id="wk" style="margin-top:8px"></div><div class="say" id="wkSay"></div></div>
+    </div>
+
+    <!-- РИЛСИ -->
+    <div data-tab="r">
+      <div class="t w4"><h4>Топ рилсів</h4><div class="muted">Торкніться, щоб відкрити в Instagram</div>
+        <div class="bar"><select id="acc"><option value="">Усі акаунти</option></select><select id="fmtSel"><option value="">Усі формати</option></select></div>
+        <div class="lst" id="list"></div></div>
+    </div>
+  </div>
 </div>
-<div class="hint">Які формати заходять (середній × медіани):</div>
-<div class="chips" id="formats"></div>
-<div id="list"></div>
-<div class="err" id="err" hidden></div>
+
 <script src="common.js"></script>
+<script src="charts.js"></script>
 <script>
 enableBack();
-let all = [];
 const $ = id => document.getElementById(id);
 const n = v => Number(v) || 0;
+const HIT = 3;
+const FMT_ICON = {"до/після":"🔁","огляд тканини чи механізмів":"🧵","монтаж":"🔧","відгук клієнта":"💬","інтер'єр під метраж":"📐","огляд об'єкта з людиною":"🙋","тур без людини":"🎥","з чого складається ціна":"💰","виробництво":"🏭","порада/лайфхак":"💡"};
+document.querySelectorAll('.sh').forEach(e => e.outerHTML = SHAPES[e.dataset.shape]);
+const h = hello(); $('hi').textContent = h.text; $('ava').textContent = h.ini;
+function showTab(t){if(t==='f'&&all.length)setTimeout(formats,0);document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('show',e.dataset.tab===t));document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));}
+$('seg').onclick = e => { if (e.target.dataset.t) showTab(e.target.dataset.t); }; showTab('o');
+
+let all = [];
+const gAvg = (rows, key, min = 1) => { const g = {}; rows.filter(r => r[key]).forEach(r => (g[r[key]] = g[r[key]] || []).push(r._x));
+  return Object.entries(g).filter(([, v]) => v.length >= min).map(([k, v]) => ({ k, v: avg(v), c: v.length })).sort((a, b) => b.v - a.v); };
+const share = (rows, key) => { const g = {}; rows.filter(r => r[key]).forEach(r => g[r[key]] = (g[r[key]] || 0) + 1); const t = rows.filter(r => r[key]).length;
+  return Object.entries(g).map(([k, c]) => ({ k, share: c / t, c })).sort((a, b) => b.c - a.c); };
 
 api('reels').then(rows => {
-  all = rows;
-  const upd = rows[0] ? rows[0]['оновлено'] : '';
-  $('info').textContent = rows.length + ' рилсів · оновлено ' + (upd || '—');
-  [...new Set(rows.map(r => r.account))].sort().forEach(a => $('acc').add(new Option('@' + a, a)));
-  [...new Set(rows.map(r => r['формат']).filter(Boolean))].sort().forEach(f => $('fmt').add(new Option(f, f)));
-  // рейтинг форматів
-  const g = {};
-  rows.filter(r => r['формат']).forEach(r => { (g[r['формат']] = g[r['формат']] || []).push(n(r['x медіани'])); });
-  $('formats').innerHTML = Object.entries(g)
-    .map(([f, xs]) => [f, xs.reduce((a, b) => a + b, 0) / xs.length, xs.length])
-    .sort((a, b) => b[1] - a[1])
-    .map(([f, avg, c]) => `<span class="chip">${esc(f)} <b>×${avg.toFixed(1)}</b> (${c})</span>`).join('');
-  render();
-}).catch(e => { $('info').textContent = ''; $('err').hidden = false; $('err').textContent = e.message; });
+  all = rows.map(r => ({ ...r, _x: n(r['x медіани']) }));
+  if (!all.length) { $('sum').textContent = 'Даних ще немає. Запустіть блокнот у Colab.'; return; }
+  overview(); list();
+  [...new Set(all.map(r => r.account))].sort().forEach(a => $('acc').add(new Option('@' + a, a)));
+  [...new Set(all.map(r => r['формат']).filter(Boolean))].sort().forEach(f => $('fmtSel').add(new Option(f, f)));
+}).catch(e => { $('err').hidden = false; $('err').textContent = e.message; });
 
-['acc', 'fmt', 'sort'].forEach(id => $(id).onchange = render);
+function overview() {
+  const hits = all.filter(r => r._x >= HIT), accs = [...new Set(all.map(r => r.account))];
+  const best = all.reduce((a, b) => b._x > a._x ? b : a);
+  const now = Date.now(), d30 = r => now - new Date(String(r['дата']).slice(0, 10)) < 30 * 864e5, d60 = r => { const t = now - new Date(String(r['дата']).slice(0, 10)); return t >= 30 * 864e5 && t < 60 * 864e5; };
+  const last = all.filter(d30).length, prev = all.filter(d60).length;
+  $('k1').textContent = all.length; $('c1').textContent = `${accs.length} акаунтів · ${last} за 30 днів`; if (prev) $('b1').innerHTML = badge(last / prev - 1);
+  $('k2').textContent = hits.length; $('c2').textContent = `${Math.round(hits.length / all.length * 100)}% від усіх рилсів`;
+  const hl = hits.filter(d30).length, hp = hits.filter(d60).length; if (hp) $('b2').innerHTML = badge(hl / hp - 1);
+  $('k3').textContent = fx(best._x); $('c3').textContent = '@' + best.account + ' · ' + fk(n(best['перегляди']));
+  $('k4').textContent = fk(median(all.map(r => n(r['перегляди']))));
+  $('sum').textContent = `${accs.length} конкурентів, ${all.length} рилсів, ${hits.length} хітів. Оновлено ${String(all[0]['оновлено'] || '').slice(0, 16)}.`;
 
-function render() {
-  const acc = $('acc').value, fmt = $('fmt').value, s = $('sort').value;
-  let rows = all.filter(r => (!acc || r.account === acc) && (!fmt || r['формат'] === fmt));
-  rows.sort((a, b) => s === 'date' ? String(b['дата']).localeCompare(String(a['дата']))
-                    : s === 'views' ? n(b['перегляди']) - n(a['перегляди'])
-                    : n(b['x медіани']) - n(a['x медіани']));
-  $('list').innerHTML = rows.slice(0, 150).map(r => `
-    <div class="card">
-      <div class="top"><span>@${esc(r.account)} · ${esc(String(r['дата']).slice(0,10))} · ${n(r['перегляди']).toLocaleString('uk')} перегл.</span>
-        <span class="x">×${n(r['x медіани']).toFixed(1)}</span></div>
-      ${r['хук'] ? `<div class="hook">«${esc(r['хук'])}»</div>` : ''}
-      ${r['тема'] ? `<div>${esc(r['тема'])}</div>` : ''}
-      <div>
-        ${r['формат'] ? `<span class="tag">${esc(r['формат'])}</span>` : ''}
-        ${r['заклик'] && r['заклик'] !== 'немає' ? `<span class="tag">📣 ${esc(r['заклик'])}</span>` : ''}
-        ${r['тип хука'] ? `<span class="tag">🪝 ${esc(r['тип хука'])}${r['сила хука'] ? ' · ' + esc(r['сила хука']) : ''}</span>` : ''}
-        ${r['ціна в ролику'] === 'так' ? '<span class="tag">💰 є ціна</span>' : ''}
-        ${r['ЖК/район'] === 'так' ? '<span class="tag">📍 ЖК/район</span>' : ''}
-        ${r['перший кадр'] ? `<span class="tag">🎞 ${esc(r['перший кадр'])}</span>` : ''}
-        <span class="tag">${esc(r['реклама/органіка'])}</span>
-      </div>
-      <a href="${esc(r.url)}" onclick="tg && tg.openLink(this.href); return !tg;">Відкрити в Instagram →</a>
-    </div>`).join('') || '<div class="hint">Поки порожньо. Запустіть блокнот у Colab.</div>';
+  // формати
+  const F = gAvg(all, 'формат');
+  $('fRow').innerHTML = F.slice(0, 3).map(f => `<div><b>${fx(f.v)}</b><span>${esc(f.k.length > 14 ? f.k.slice(0, 13) + '…' : f.k)}</span></div>`).join('');
+  $('fBars').innerHTML = vbars(F.map(f => ({ k: f.k, short: (FMT_ICON[f.k] || '•'), v: f.v, tip: `${f.k}: ${fx(f.v)}, ${f.c} рилс.` })), { fmt: fx, ref: 1, refLabel: '1×', h: 140, W: $('fBars').clientWidth });
+  if (F.length > 1) $('fSay').innerHTML = `<b>${esc(F[0].k)}</b> дає ${fx(F[0].v)}, це у ${(F[0].v / Math.max(F[F.length - 1].v, .01)).toFixed(1).replace('.', ',')} раза більше за «${esc(F[F.length - 1].k)}».`;
+
+  // формула
+  const base = hits.length ? hits : [...all].sort((a, b) => b._x - a._x).slice(0, 10);
+  const H = share(base, 'тип хука')[0], Fm = share(base, 'формат')[0], C = share(base.filter(r => r['заклик'] && r['заклик'] !== 'немає'), 'заклик')[0];
+  const st = (i, l, o) => `<div><i>${i}</i><div><small>${l}</small><b>${o ? esc(o.k) : '—'}</b></div><span>${o ? Math.round(o.share * 100) + '%' : ''}</span></div>`;
+  $('steps').innerHTML = st(1, 'Хук', H) + st(2, 'Формат', Fm) + st(3, 'Заклик', C);
+  $('stepSay').innerHTML = H && Fm ? `Наш наступний ролик: «${esc(H.k)}» на початку, формат «${esc(Fm.k)}»${C ? `, наприкінці «${esc(C.k)}»` : ''}.` : 'Потрібен розбір Drex.';
+
+  // ефект прийомів
+  const defs = [['ціна в ролику', 'Ціна в ролику', '💰'], ['людина в кадрі', 'Людина в кадрі', '🙋'], ['ЖК/район', 'ЖК або район', '📍'], ['сила хука', 'Сильний хук', '🪝', v => v === 'сильний', v => v && v !== 'сильний']];
+  const L = defs.map(([k, l, ic, y, no]) => { y = y || (v => v === 'так'); no = no || (v => v === 'ні');
+    const a = all.filter(r => y(r[k])).map(r => r._x), b = all.filter(r => no(r[k])).map(r => r._x);
+    return { l, ic, ok: a.length > 1 && b.length > 1, lift: avg(a) / Math.max(avg(b), .01) - 1, a: avg(a), b: avg(b), ca: a.length }; }).filter(x => x.ok).sort((p, q) => q.lift - p.lift);
+  $('lifts').innerHTML = L.map(x => `<div class="li"><div class="ico">${x.ic}</div><div><b>${x.l}</b><small>${fx(x.a)} проти ${fx(x.b)} без</small></div>${badge(x.lift)}</div>`).join('') || '<div class="muted">Потрібен розбір Drex</div>';
+  if (L.length) $('liftSay').innerHTML = L[0].lift > 0 ? `Додавайте <b>${L[0].l.toLowerCase()}</b>: це дає ${pct(L[0].lift)} до результату.` : 'Жоден прийом поки не дає явної переваги.';
+
+  // тривалість
+  const DB = [['до 15с', 0, 15], ['15–30с', 15, 30], ['30–60с', 30, 60], ['60+с', 60, 1e9]].map(([k, a, b]) => { const v = all.filter(r => n(r['тривалість']) >= a && n(r['тривалість']) < b && n(r['тривалість']) > 0).map(r => r._x); return { k, v: avg(v), c: v.length }; }).filter(d => d.c);
+  $('dur').innerHTML = vbars(DB.map(d => ({ ...d, tip: `${d.k}: ${fx(d.v)}, ${d.c} рилс.` })), { fmt: fx, ref: 1, refLabel: '1×', h: 130, bw: 26, W: $('dur').clientWidth });
+  const bd = [...DB].sort((a, b) => b.v - a.v)[0]; if (bd) $('durSay').innerHTML = `Оптимум — <b>${bd.k}</b> (${fx(bd.v)}).`;
+
+  // конкуренти
+  const A = accs.map(a => { const l = all.filter(r => r.account === a); return { a, med: n(l[0]['медіана акаунта']), hits: l.filter(r => r._x >= HIT).length, best: Math.max(...l.map(r => r._x)) }; }).sort((p, q) => q.med - p.med);
+  $('bub').innerHTML = bubbles(A.map(x => ({ v: x.med, label: fk(x.med), tip: `@${x.a}: медіана ${fk(x.med)}, хітів ${x.hits}` })), { W: $('bub').clientWidth });
+  $('accList').innerHTML = A.slice(0, 5).map((x, i) => `<div class="li"><div class="ico">${i + 1}</div><div><b>@${esc(x.a)}</b><small>хітів ${x.hits} · рекорд ${fx(x.best)}</small></div><span class="pill${i === 0 ? ' acc' : ''}">${fk(x.med)}</span></div>`).join('');
+
+  // висновки
+  const ins = [];
+  if (F.length) ins.push(`Найсильніший формат — <b>${esc(F[0].k)}</b> (${fx(F[0].v)}).`);
+  const HK = gAvg(all, 'тип хука', 2); if (HK.length) ins.push(`Найкраще чіпляє хук «<b>${esc(HK[0].k)}</b>» (${fx(HK[0].v)}).`);
+  if (L.length && L[0].lift > 0) ins.push(`${L[0].l}: такі рилси на <b>${pct(L[0].lift)}</b> сильніші.`);
+  if (bd) ins.push(`Найкраща тривалість — <b>${bd.k}</b>.`);
+  const ah = [...A].sort((p, q) => q.hits - p.hits)[0]; if (ah && ah.hits) ins.push(`Найбільше хітів у <b>@${esc(ah.a)}</b> (${ah.hits}). Розберіть їхні ролики першими.`);
+  $('ins').innerHTML = ins.map(t => `<li><span>${t}</span></li>`).join('');
+}
+
+function formats() {
+  const hits = all.filter(r => r._x >= HIT && r['тип хука']); const S = share(hits.length ? hits : all, 'тип хука');
+  $('ring').innerHTML = rings(S, { size: 140 }); $('ringLeg').innerHTML = ringLegend(S);
+  if (S[0]) $('ringSay').innerHTML = `Кожен ${Math.max(1, Math.round(1 / S[0].share))}-й хіт починається з «<b>${esc(S[0].k)}</b>».`;
+  const hooks = gAvg(all, 'тип хука').slice(0, 4).map(d => d.k), fmts = gAvg(all, 'формат').slice(0, 4).map(d => d.k);
+  if (hooks.length && fmts.length) {
+    const cell = {}; let mx = 0, best = '';
+    all.forEach(r => { const k = r['тип хука'] + '|' + r['формат']; if (hooks.includes(r['тип хука']) && fmts.includes(r['формат'])) (cell[k] = cell[k] || []).push(r._x); });
+    Object.entries(cell).forEach(([k, v]) => { if (avg(v) > mx) { mx = avg(v); best = k; } });
+    let s = `<div class="hm" style="grid-template-columns:80px repeat(${fmts.length},1fr)"><div></div>` + fmts.map(f => `<div class="h">${esc(f)}</div>`).join('');
+    hooks.forEach(k => { s += `<div class="r">${esc(k)}</div>`; fmts.forEach(f => { const v = cell[k + '|' + f]; if (!v) { s += '<div class="c" style="background:var(--tile);color:var(--hint)">·</div>'; return; }
+      const t = Math.min(avg(v) / mx, 1); s += `<div class="c" data-tip="${esc(k)} + ${esc(f)}: ${fx(avg(v))}, ${v.length} рилс." style="background:color-mix(in oklab,var(--esp) ${Math.round(8 + t * 84)}%,var(--tile));color:${t > .5 ? 'var(--esp-text)' : 'var(--text)'}">${fx(avg(v))}</div>`; }); });
+    $('hm').innerHTML = s + '</div>'; const [bh, bf] = best.split('|'); $('hmSay').innerHTML = `Найсильніше: <b>${esc(bh)}</b> + <b>${esc(bf)}</b> (${fx(mx)}). Крапки — ніша, яку ніхто не зайняв.`;
+  }
+  const HK = gAvg(all, 'тип хука'); $('hBars').innerHTML = vbars(HK.map(x => ({ k: x.k, short: x.k.split(' ')[0].slice(0, 7), v: x.v, tip: `${x.k}: ${fx(x.v)}` })), { fmt: fx, ref: 1, refLabel: '1×', h: 150, W: $('hBars').clientWidth });
+  const wk = d => { const t = new Date(String(d).slice(0, 10)); if (isNaN(t)) return null; t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return t.toISOString().slice(0, 10); };
+  const g = {}; all.forEach(r => { const w = wk(r['дата']); if (w) { g[w] = g[w] || [0, 0]; g[w][0]++; if (r._x >= HIT) g[w][1]++; } });
+  const W = Object.keys(g).sort().slice(-10);
+  $('wk').innerHTML = vbars(W.map(w => ({ k: w, short: w.slice(8) + '.' + w.slice(5, 7), v: g[w][1], tip: `Тиждень з ${w.slice(8)}.${w.slice(5, 7)}: ${g[w][0]} рилс., хітів ${g[w][1]}` })), { fmt: v => v + ' хіт.', h: 140, W: $('wk').clientWidth });
+  $('wkSay').innerHTML = `Конкуренти разом публікують ~<b>${Math.round(avg(W.map(w => g[w][0])))}</b> рилсів на тиждень.`;
+}
+
+['acc', 'fmtSel'].forEach(id => $(id).onchange = list);
+function list() {
+  const a = $('acc').value, f = $('fmtSel').value;
+  const rows = all.filter(r => (!a || r.account === a) && (!f || r['формат'] === f)).sort((p, q) => q._x - p._x).slice(0, 30);
+  $('list').innerHTML = rows.map(r => `<div class="li" style="cursor:pointer" onclick="tg ? tg.openLink('${esc(r.url)}') : open('${esc(r.url)}')">
+    <div class="ico">${FMT_ICON[r['формат']] || '🎬'}</div>
+    <div><b>${r['хук'] ? '«' + esc(r['хук']) + '»' : esc(r['тема'] || 'Без мови')}</b><small>@${esc(r.account)} · ${fk(n(r['перегляди']))} · ${esc(r['формат'] || '')}${r['тип хука'] ? ' · ' + esc(r['тип хука']) : ''}</small></div>
+    <span class="pill${r._x >= HIT ? ' acc' : ''}">${fx(r._x)}</span></div>`).join('') || '<div class="muted">Нічого не знайдено</div>';
 }
 </script>
 </body>

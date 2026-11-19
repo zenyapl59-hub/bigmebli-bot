@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Наша реклама</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="theme.js"></script>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="bento.css">
+<style>
+.steps{display:grid;gap:8px;margin-top:12px;position:relative}
+.steps>div{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.07)}
+.steps b{font-size:18px;letter-spacing:-.02em}.steps small{display:block;font-size:11px;color:rgba(246,239,230,.6)}
+.steps span{font-size:12px;font-weight:700;color:var(--accent)}
+.steps>.cv{background:transparent;padding:0 12px;font-size:12px;color:rgba(246,239,230,.6)}
+.nums{display:grid;gap:12px;margin-top:12px;counter-reset:i;padding:0;list-style:none}
+.nums li{display:grid;grid-template-columns:24px 1fr;gap:10px;font-size:14px;line-height:1.5}
+.nums li::before{counter-increment:i;content:counter(i);font-weight:800;font-size:18px;color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="head"><div><div class="brand">Big Mebli · реклама Meta</div><h1 id="hi">Добрий день</h1><p id="sum">Завантажую дані…</p></div><div class="avatar" id="ava">BM</div></div>
+  <div class="chips2" id="per"><button data-d="7">7 днів</button><button data-d="30" class="on">30 днів</button><button data-d="90">90 днів</button></div>
+  <div class="demo" id="demo" hidden>Це демо-дані для перегляду дизайну. Справжні цифри з’являться після підключення рекламного кабінету (крок 7).</div>
+  <div class="err" id="err" hidden></div>
+
+  <div class="bento">
+    <div class="t kpi2"><div class="top"><div class="ico">💸</div><span id="b1"></span></div><div class="lbl">Витрачено</div><div class="num" id="k1">—</div><div class="cmp">до попереднього періоду</div></div>
+    <div class="t kpi2"><div class="top"><div class="ico">📩</div><span id="b2"></span></div><div class="lbl">Заявки</div><div class="num" id="k2">—</div><div class="cmp" id="c2"></div></div>
+    <div class="t kpi2"><div class="top"><div class="ico">🎯</div><span id="b3"></span></div><div class="lbl">Ціна заявки</div><div class="num" id="k3">—</div><div class="cmp" id="c3"></div></div>
+    <div class="t kpi2"><div class="top"><div class="ico">👆</div><span id="b4"></span></div><div class="lbl">CTR</div><div class="num" id="k4">—</div><div class="cmp" id="c4"></div></div>
+
+    <div class="t tan w2"><span class="sh" data-shape="plus"></span><h4>Заявки по днях</h4><div class="muted">Найкращий день виділено</div><div class="row3" id="dRow"></div><div id="days" style="margin-top:8px"></div></div>
+
+    <div class="t esp w2"><span class="sh" data-shape="star"></span><h4>Воронка</h4><div class="muted">Від показу до заявки</div><div class="steps" id="funnel"></div><div class="say" id="funSay"></div></div>
+
+    <div class="t w2"><h4>Розподіл бюджету</h4><div class="muted">Частка витрат за кампаніями</div>
+      <div style="display:flex;gap:14px;align-items:center;margin-top:10px"><div id="ring"></div><div style="flex:1;min-width:0" id="ringLeg"></div></div><div class="say" id="ringSay"></div></div>
+
+    <div class="t sage w2"><span class="sh" data-shape="tri"></span><h4>Ціна заявки</h4><div class="muted">По тижнях, пунктир — наша ціль</div><div id="cpl" style="margin-top:8px"></div><div class="say" id="cplSay"></div></div>
+
+    <div class="t w4"><h4>Кампанії</h4><div class="muted">Зелена ціна — дешевше за ціль, червона — дорожче</div><div class="lst" id="camps"></div></div>
+
+    <div class="t rose w2"><span class="sh" data-shape="heart"></span><h4>Найкращі оголошення</h4><div class="muted">Найдешевша заявка (від 3 заявок)</div><div class="lst" id="ads"></div></div>
+
+    <div class="t w2"><h4>Висновки</h4><div class="muted">Що робити цього тижня</div><ol class="nums" id="ins"></ol></div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script src="charts.js"></script>
+<script>
+enableBack();
+const CPL_TARGET = 8;   // ціль: ціна заявки в $ (можна змінити)
+const $ = id => document.getElementById(id);
+const n = v => Number(String(v).replace(',', '.')) || 0;
+document.querySelectorAll('.sh').forEach(e => e.outerHTML = SHAPES[e.dataset.shape]);
+const h = hello(); $('hi').textContent = h.text; $('ava').textContent = h.ini;
+let rows = [], days = 30;
+
+function demo() {
+  const C = [['Кухні · лід-форма', ['Кухня 311 тис — що входить', 'Ціна в договорі', 'Старт від 10%']], ['Комплекс · Direct', ['Квартира 450 тис під ключ', '3D → готова кухня']], ['Ретаргет', ['Відгук клієнта', 'Виробництво']]];
+  const out = [], today = new Date(); let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  for (let d = 89; d >= 0; d--) { const dt = new Date(today - d * 864e5).toISOString().slice(0, 10);
+    C.forEach(([c, ads], ci) => ads.forEach((a, ai) => { const sp = [14, 10, 6][ci] / ads.length * (0.7 + rnd() * .6) * (d < 30 ? 1.1 : 1), imp = sp * (900 + rnd() * 500), cl = imp * (0.008 + rnd() * .01), ld = Math.round(sp / ([6.5, 9, 7][ci] + ai * 1.5) * (0.6 + rnd() * .8));
+      out.push({ 'дата': dt, 'кампанія': c, 'оголошення': a, 'витрата': +sp.toFixed(2), 'покази': Math.round(imp), 'кліки': Math.round(cl), 'заявки': ld, 'повідомлення': Math.round(ld * .4 + .3) }); })); }
+  return out;
+}
+
+api('ourAds').then(r => { rows = r.length ? r : (($('demo').hidden = false), demo()); draw(); })
+  .catch(e => { rows = demo(); $('demo').hidden = false; draw(); });
+
+$('per').onclick = e => { if (!e.target.dataset.d) return; days = +e.target.dataset.d; [...$('per').children].forEach(b => b.classList.toggle('on', b === e.target)); draw(); };
+
+function sum(rs, k) { return rs.reduce((s, r) => s + n(r[k]), 0); }
+function draw() {
+  const end = new Date(Math.max(...rows.map(r => new Date(String(r['дата']).slice(0, 10))))), dd = r => (end - new Date(String(r['дата']).slice(0, 10))) / 864e5;
+  const cur = rows.filter(r => dd(r) < days), prev = rows.filter(r => dd(r) >= days && dd(r) < days * 2);
+  const S = sum(cur, 'витрата'), Ld = sum(cur, 'заявки'), Im = sum(cur, 'покази'), Cl = sum(cur, 'кліки'), Ms = sum(cur, 'повідомлення');
+  const pS = sum(prev, 'витрата'), pL = sum(prev, 'заявки'), pI = sum(prev, 'покази'), pC = sum(prev, 'кліки');
+  const cpl = S / Math.max(Ld, 1), pcpl = pS / Math.max(pL, 1), ctr = Cl / Math.max(Im, 1), pctr = pC / Math.max(pI, 1);
+  $('k1').textContent = fm(S); $('k2').textContent = Ld; $('k3').textContent = fm(cpl); $('k4').textContent = (ctr * 100).toFixed(2).replace('.', ',') + '%';
+  $('c2').textContent = `${Ms} з них у месенджер`; $('c3').textContent = `ціль ${fm(CPL_TARGET)}`; $('c4').textContent = `${fk(Im)} показів`;
+  if (prev.length) { $('b1').innerHTML = badge(S / pS - 1, true); $('b2').innerHTML = badge(Ld / pL - 1); $('b3').innerHTML = badge(cpl / pcpl - 1, true); $('b4').innerHTML = badge(ctr / pctr - 1); }
+  $('sum').textContent = `За ${days} днів: ${fm(S)} витрат, ${Ld} заявок по ${fm(cpl)}. ${cpl <= CPL_TARGET ? 'Ціна заявки в межах цілі.' : 'Ціна заявки вища за ціль.'}`;
+
+  // по днях (останні до 30 точок; для 90 днів — по тижнях)
+  const key = days > 30 ? (d => { const t = new Date(d); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return t.toISOString().slice(0, 10); }) : (d => d);
+  const g = {}; cur.forEach(r => { const k = key(String(r['дата']).slice(0, 10)); g[k] = g[k] || { s: 0, l: 0 }; g[k].s += n(r['витрата']); g[k].l += n(r['заявки']); });
+  const K = Object.keys(g).sort(); const best = K.reduce((a, k) => g[k].l > (g[a] || { l: -1 }).l ? k : a, K[0]);
+  $('days').innerHTML = vbars(K.map(k => ({ k, short: k.slice(8) + '.' + k.slice(5, 7), v: g[k].l, tip: `${k.slice(8)}.${k.slice(5, 7)}: ${g[k].l} заявок, ${fm(g[k].s)}` })), { fmt: v => v + ' заявок', h: 150, bw: days > 30 ? 16 : 8, W: $('days').clientWidth });
+  $('dRow').innerHTML = `<div><b>${(Ld / Math.max(K.length, 1)).toFixed(1).replace('.', ',')}</b><span>${days > 30 ? 'на тиждень' : 'на день'}</span></div><div><b>${best ? g[best].l : 0}</b><span>рекорд</span></div><div><b>${Ms}</b><span>у месенджер</span></div>`;
+
+  // воронка
+  $('funnel').innerHTML = `<div><div><small>Покази</small><b>${fk(Im)}</b></div><span>100%</span></div><div class="cv">↓ CTR ${(ctr * 100).toFixed(2).replace('.', ',')}%</div>
+    <div><div><small>Кліки</small><b>${fk(Cl)}</b></div><span>${(ctr * 100).toFixed(1).replace('.', ',')}%</span></div><div class="cv">↓ конверсія ${(Ld / Math.max(Cl, 1) * 100).toFixed(1).replace('.', ',')}%</div>
+    <div><div><small>Заявки</small><b>${Ld}</b></div><span>${fm(cpl)}</span></div>`;
+  $('funSay').innerHTML = Ld / Math.max(Cl, 1) < .05 ? 'Клікають, але мало залишають заявку: перевірте лід-форму й оффер.' : ctr < .008 ? 'Мало кліків: креативи не чіпляють, тестуйте нові хуки.' : 'Воронка здорова. Масштабуйте найдешевші оголошення.';
+
+  // бюджет
+  const cg = {}; cur.forEach(r => { const c = r['кампанія']; cg[c] = cg[c] || { s: 0, l: 0, i: 0, c: 0 }; cg[c].s += n(r['витрата']); cg[c].l += n(r['заявки']); cg[c].i += n(r['покази']); cg[c].c += n(r['кліки']); });
+  const CS = Object.entries(cg).map(([k, v]) => ({ k, ...v, share: v.s / Math.max(S, .01), cpl: v.s / Math.max(v.l, 1) })).sort((a, b) => b.s - a.s);
+  $('ring').innerHTML = rings(CS, { size: 140 }); $('ringLeg').innerHTML = ringLegend(CS, { val: d => fm(d.s) });
+  const top = CS[0]; if (top) $('ringSay').innerHTML = `<b>${esc(top.k)}</b> забирає ${Math.round(top.share * 100)}% бюджету і дає заявку по ${fm(top.cpl)}.`;
+
+  // CPL по тижнях
+  const wk = {}; rows.filter(r => dd(r) < Math.max(days, 56)).forEach(r => { const k = key.call ? (d => { const t = new Date(d); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return t.toISOString().slice(0, 10); })(String(r['дата']).slice(0, 10)) : ''; wk[k] = wk[k] || { s: 0, l: 0 }; wk[k].s += n(r['витрата']); wk[k].l += n(r['заявки']); });
+  const WK = Object.keys(wk).sort();
+  $('cpl').innerHTML = line(WK.map(k => ({ k: k.slice(8) + '.' + k.slice(5, 7), v: wk[k].s / Math.max(wk[k].l, 1) })), { fmt: fm, target: CPL_TARGET, targetLabel: 'ціль ' + fm(CPL_TARGET), h: 130, W: $('cpl').clientWidth });
+  if (WK.length > 1) { const a = wk[WK[WK.length - 1]], b = wk[WK[WK.length - 2]], ch = (a.s / Math.max(a.l, 1)) / (b.s / Math.max(b.l, 1)) - 1;
+    $('cplSay').innerHTML = `За останній тиждень ціна заявки ${ch < 0 ? 'знизилась' : 'зросла'} на <b>${Math.abs(Math.round(ch * 100))}%</b>.`; }
+
+  // кампанії
+  $('camps').innerHTML = CS.map((c, i) => `<div class="li"><div class="ico">${['🍳', '🏠', '🔁', '📣', '🪑'][i] || '📣'}</div><div><b>${esc(c.k)}</b><small>${fm(c.s)} · ${c.l} заявок · CTR ${(c.c / Math.max(c.i, 1) * 100).toFixed(2).replace('.', ',')}%</small></div><span class="badge ${c.cpl <= CPL_TARGET ? 'pos' : 'neg'}">${fm(c.cpl)}</span></div>`).join('');
+
+  // оголошення
+  const ag = {}; cur.forEach(r => { const a = r['оголошення'] || '—'; ag[a] = ag[a] || { s: 0, l: 0, c: r['кампанія'] }; ag[a].s += n(r['витрата']); ag[a].l += n(r['заявки']); });
+  const AD = Object.entries(ag).map(([k, v]) => ({ k, ...v, cpl: v.s / Math.max(v.l, 1) })).filter(a => a.l >= 3).sort((a, b) => a.cpl - b.cpl);
+  $('ads').innerHTML = AD.slice(0, 4).map((a, i) => `<div class="li"><div class="ico">${i + 1}</div><div><b>${esc(a.k)}</b><small>${esc(a.c)} · ${a.l} заявок</small></div><span class="pill${i === 0 ? ' acc' : ''}">${fm(a.cpl)}</span></div>`).join('') || '<div class="muted">Замало заявок</div>';
+
+  // висновки
+  const ins = [];
+  if (AD[0]) ins.push(`Найдешевша заявка в оголошенні «<b>${esc(AD[0].k)}</b>» (${fm(AD[0].cpl)}). Додайте йому бюджет.`);
+  const worst = AD[AD.length - 1]; if (worst && worst.cpl > CPL_TARGET * 1.5) ins.push(`«<b>${esc(worst.k)}</b>» дає заявку по ${fm(worst.cpl)}: вимкніть або замініть креатив.`);
+  const exp = CS.filter(c => c.cpl > CPL_TARGET); if (exp.length) ins.push(`Кампанія «<b>${esc(exp[0].k)}</b>» дорожча за ціль (${fm(exp[0].cpl)}).`);
+  if (prev.length) ins.push(`Заявок ${Ld >= pL ? 'більше' : 'менше'}, ніж у попередньому періоді (${Ld} проти ${pL}).`);
+  ins.push('Перевірте в CRM, скільки з цих заявок дійшли до заміру: від цього залежить реальна ціна договору.');
+  $('ins').innerHTML = ins.map(t => `<li><span>${t}</span></li>`).join('');
+}
+</script>
+</body>
+</html>
